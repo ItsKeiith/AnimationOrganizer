@@ -7,16 +7,21 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.orm import Session
 
-from model.users_model.users_roles import Roles
-from model.users_model.users import Users
+from model.rol import Roles
+from model.user import Users
 from database.database import SessionLocal
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter()
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="login")
 ALGORITMO = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-SECRET = "8206363919414062c91ad6a334ea04d2489d5a471465794c0d3b9e196313bde5"
+SECRET = os.getenv("SECRET_KEY")
 
 crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

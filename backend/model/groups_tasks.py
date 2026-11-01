@@ -17,9 +17,7 @@ class GroupTasks(Base):
     #Foreign Keys
     task_pk = Column(Integer, ForeignKey("tasks.tasks_pk")) 
     user_pk = Column(Integer, ForeignKey("user.user_pk"))
-    group_pk = Column(Integer, ForeignKey("group.group_pk"))
     
     #Relationships
     task = relationship("Tasks", back_populates="group_tasks")
     user = relationship("User", back_populates="group_tasks")
-    group = relationship("Group", back_populates="group_tasks")

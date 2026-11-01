@@ -3,7 +3,7 @@ from database.database import Base # Importas la Base que creaste
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-class Permission(Base):
+class Permissions(Base):
     # Nombre de la tabla en tu base de datos (Postgres/SQLite)
     __tablename__ = "permission" 
 
