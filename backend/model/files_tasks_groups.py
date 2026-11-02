@@ -7,8 +7,8 @@ class FilesTasksGroups(Base):
     # Nombre de la tabla en tu base de datos (Postgres/SQLite)
     __tablename__ = "files_tasks_groups" 
 
-    # Definición de las columnas basándonos en tu código
     files_tasks_groups_pk = Column(Integer, primary_key=True, index=True)
+    files_tasks_groups_name = Column(String, unique=True, index=True)
     is_active = Column(Boolean, default=True)
     
  

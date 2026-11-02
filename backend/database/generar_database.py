@@ -17,6 +17,5 @@ from model.files_tasks import FilesTasks
 Base.metadata.create_all(bind=engine)
 
 
-Base.metadata.create_all(bind=engine)
 
 

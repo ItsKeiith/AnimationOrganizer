@@ -8,7 +8,7 @@ from model.rol import Role
 from model.tasks import Tasks
 from model.files_tasks import FilesTasks
 from model.files_tasks_groups import FilesTasksGroups
-from model.files_tasks_type import FilesTasksType
+from model.files_tasks_type import FilesTasksTypes
 from model.groups_tasks_views import GroupsTasksViews
 from model.groups_tasks import GroupTasks
 from model.permisions import Permissions
@@ -36,7 +36,7 @@ async def get_db():
 # GET
 @router.get("/files_tasks_types")
 async def obtener_files_tasks_types(db: Session = Depends(get_db)):
-    files_tasks_types = db.query(FilesTasksType).all()
+    files_tasks_types = db.query(FilesTasksTypes).all()
 
     return {
         "mensaje": "Conexión a la base de datos exitosa", 
@@ -50,8 +50,8 @@ def create_files_tasks_type(
     type_data: FilesTasksTypeClass,
     db: Session = Depends(get_db)
 ):
-    existing_type = db.query(FilesTasksType).filter(
-        FilesTasksType.files_tasks_type_name == type_data.files_tasks_type_name
+    existing_type = db.query(FilesTasksTypes).filter(
+        FilesTasksTypes.files_tasks_type_name == type_data.files_tasks_type_name
     ).first()
 
     if existing_type:
@@ -60,7 +60,7 @@ def create_files_tasks_type(
             detail="Files tasks type name already exists"
         )
 
-    new_type = FilesTasksType(
+    new_type = FilesTasksTypes(
         files_tasks_type_pk=type_data.files_tasks_type_pk,
         files_tasks_type_name=type_data.files_tasks_type_name,
         is_active=type_data.is_active
@@ -82,7 +82,7 @@ def create_files_tasks_types_bulk(
     db: Session = Depends(get_db)
 ):
     types_to_insert = [
-        FilesTasksType(
+        FilesTasksTypes(
             files_tasks_type_pk=item.files_tasks_type_pk,
             files_tasks_type_name=item.files_tasks_type_name,
             is_active=item.is_active
@@ -104,8 +104,8 @@ def update_files_tasks_type(
     type_data: FilesTasksTypeClass,
     db: Session = Depends(get_db)
 ):
-    type_actual = db.query(FilesTasksType).filter(
-        FilesTasksType.files_tasks_type_pk == type_id
+    type_actual = db.query(FilesTasksTypes).filter(
+        FilesTasksTypes.files_tasks_type_pk == type_id
     ).first()
 
     if not type_actual:
@@ -128,8 +128,8 @@ def update_files_tasks_type(
 # DELETE
 @router.delete("/files_tasks_types/{type_pk}")
 async def borrar_files_tasks_type(type_pk: int, db: Session = Depends(get_db)):
-    type_actual = db.query(FilesTasksType).filter(
-        FilesTasksType.files_tasks_type_pk == type_pk
+    type_actual = db.query(FilesTasksTypes).filter(
+        FilesTasksTypes.files_tasks_type_pk == type_pk
     ).first() 
 
     if not type_actual:
