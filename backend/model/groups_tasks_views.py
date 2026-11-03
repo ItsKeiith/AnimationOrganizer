@@ -4,10 +4,8 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 
 class GroupsTasksViews(Base):
-    # Nombre de la tabla en tu base de datos (Postgres/SQLite)
     __tablename__ = "groups_tasks_views" 
 
-    # Definición de las columnas basándonos en tu código
     groups_tasks_views_pk = Column(Integer, primary_key=True, index=True)
     groups_tasks_views_name = Column(String, unique=True, index=True)
     is_active = Column(Boolean, default=True)

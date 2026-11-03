@@ -117,4 +117,3 @@ async def current_user(user: User = Depends(auth_user)):
 async def me(user: User = Depends(current_user)):
     return user
 
-#Checar lo del token para poder hacer uso de la aplicion una vez logeado 

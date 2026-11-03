@@ -11,7 +11,6 @@ from database.database import SessionLocal, engine
 
 router = APIRouter()
 
-# 1. ESQUEMA PYDANTIC CORREGIDO (user_pk sin 's')
 class UsersClass(BaseModel):
     user_pk: int 
     user_name: str

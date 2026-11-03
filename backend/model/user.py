@@ -4,10 +4,8 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 
 class User(Base):
-    # Nombre de la tabla en tu base de datos (Postgres/SQLite)
     __tablename__ = "user" 
 
-    # Definición de las columnas basándonos en tu código
     user_pk = Column(Integer, primary_key=True, index=True)
     user_name = Column(String, unique=True, index=True)
     user_email = Column(String, unique=True, index=True)

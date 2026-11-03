@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 
 class FilesTasksGroups(Base):
-    # Nombre de la tabla en tu base de datos (Postgres/SQLite)
     __tablename__ = "files_tasks_groups" 
 
     files_tasks_groups_pk = Column(Integer, primary_key=True, index=True)

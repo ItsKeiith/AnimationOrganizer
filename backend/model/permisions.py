@@ -4,10 +4,8 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 
 class Permissions(Base):
-    # Nombre de la tabla en tu base de datos (Postgres/SQLite)
     __tablename__ = "permission" 
 
-    # Definición de las columnas basándonos en tu código
     permission_pk = Column(Integer, primary_key=True, index=True)
     permission_name = Column(String, unique=True, index=True)
     permission_description = Column(String)

@@ -4,10 +4,8 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 
 class Tasks(Base):
-    # Nombre de la tabla en tu base de datos (Postgres/SQLite)
     __tablename__ = "tasks" 
 
-    # Definición de las columnas basándonos en tu código
     tasks_pk = Column(Integer, primary_key=True, index=True)
     task_name = Column(String, unique=True, index=True)
     task_description = Column(String)

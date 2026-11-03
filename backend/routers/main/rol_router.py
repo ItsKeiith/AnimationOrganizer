@@ -11,7 +11,6 @@ from database.database import SessionLocal, engine
 
 router = APIRouter()
 
-# Clase base para manejar la base de datos (Sin modificaciones)
 class RolesClass(BaseModel):
     role_pk: int
     role_name: str
