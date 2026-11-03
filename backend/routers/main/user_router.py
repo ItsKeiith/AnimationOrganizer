@@ -11,9 +11,9 @@ from database.database import SessionLocal, engine
 
 router = APIRouter()
 
-# Clase base para manejar la base de datos (Sin modificaciones)
+# 1. ESQUEMA PYDANTIC CORREGIDO (user_pk sin 's')
 class UsersClass(BaseModel):
-    users_pk: int
+    user_pk: int 
     user_name: str
     user_email: str
     user_password: str
@@ -21,7 +21,7 @@ class UsersClass(BaseModel):
     user_created_at: date
     user_updated_at: date
     is_active: bool
-    role_pk: int                                                                                                                                   
+    role_pk: int                                                                                                             
 
 # Conexion a la base de datos 
 async def get_db():
@@ -61,6 +61,7 @@ def create_user(
         )
 
     new_user = User(
+        user_pk=user_data.user_pk, # Corregido
         user_name=user_data.user_name,
         user_password=user_data.user_password,
         user_email=user_data.user_email,
@@ -89,7 +90,7 @@ def create_users_bulk(
 ):
     users_to_insert = [
         User(
-            users_pk=user.users_pk,
+            user_pk=user.user_pk, # Corregido
             user_name=user.user_name,
             user_password=user.user_password,
             user_email=user.user_email,
@@ -117,7 +118,7 @@ def update_user(
     db: Session = Depends(get_db)
 ):
     user = db.query(User).filter(
-        User.users_pk == user_id
+        User.user_pk == user_id # Corregido
     ).first()
 
     if not user:
@@ -143,9 +144,9 @@ def update_user(
     }
 
 # DELETE
-@router.delete("/users/{users_pk}")
-async def borrar_user(users_pk: int, db: Session = Depends(get_db)):
-    user_actual = db.query(User).filter(User.users_pk == users_pk).first() 
+@router.delete("/users/{user_pk}") # Corregido
+async def borrar_user(user_pk: int, db: Session = Depends(get_db)):
+    user_actual = db.query(User).filter(User.user_pk == user_pk).first() # Corregido
 
     if not user_actual:
         raise HTTPException(status_code=404, detail="User no encontrado")
@@ -153,4 +154,4 @@ async def borrar_user(users_pk: int, db: Session = Depends(get_db)):
     user_actual.is_active = False
     db.commit()
     
-    return {"mensaje": f"User con ID {users_pk} desactivado correctamente"}
+    return {"mensaje": f"User con ID {user_pk} desactivado correctamente"}

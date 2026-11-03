@@ -7,7 +7,7 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    console.log("Intentando iniciar sesión con:", { user, password });
+    console.log("Intentando iniciar sesion con:", { user, password });
   };
 
   return (
