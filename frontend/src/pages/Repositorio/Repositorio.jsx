@@ -1,16 +1,11 @@
-import React from 'react'
-import MainLayout from "../../layouts/MainLayout";
-
+import React from 'react';
 
 function Repositorio() {
   return (
     <div>
-        <MainLayout>
-        Repositorio
-        
-        </MainLayout>
-        </div>
-  )
+        <h1>Repositorio</h1>
+    </div>
+  );
 }
 
-export default Repositorio
+export default Repositorio;

@@ -61,7 +61,6 @@ def create_user(
         )
 
     new_user = User(
-        users_pk=user_data.users_pk,
         user_name=user_data.user_name,
         user_password=user_data.user_password,
         user_email=user_data.user_email,

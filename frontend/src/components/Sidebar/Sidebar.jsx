@@ -1,4 +1,4 @@
-//import React from 'react'; import './Sidebar.css'; import { useNavigate } from "react-router-dom"; import { useState } from "react";
+import React from 'react'; import './Sidebar.css'; import { useNavigate } from "react-router-dom"; import { useState } from "react";
 function Sidebar() {
 
     const navigate = useNavigate();
@@ -23,44 +23,38 @@ function Sidebar() {
                         className="Buttom"
                         onClick={() => navigate("/dashboard")}
                     >
-                        Home
+                        Main Dashboard
                     </button>
 
                     <button
                         className="Buttom"
-                        onClick={() => navigate("/recalificaciones")}
+                        onClick={() => navigate("/pipeline")}
                     >
-                        Recalificaciones
+                        Pipeline
                     </button>
 
 
                     <button
                         className="Buttom"
-                        onClick={() => navigate("/incoming")}
+                        onClick={() => navigate("/repositorio")}
                     >
-                        Incoming
+                        Repositorio
                     </button>
 
                     <button
                         className="Buttom"
-                        onClick={() => navigate("/scrap")}
+                        onClick={() => navigate("/Cronograma")}
                     >
-                        Scrap
-                    </button>
-
-                    <button
-                        className="Buttom"
-                        onClick={() => navigate("/buscador-de-piezas")}
-                    >
-                        Buscador de Piezas
+                        Cronograma
                     </button>
 
                     <button
                         className="Buttom"
                         onClick={() => navigate("/")}
                     >
-                        Login
+                        Exit
                     </button>
+
 
                 </>
 

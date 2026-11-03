@@ -13,8 +13,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 #Users
-from routers.login_router import router as login_router
-
+from routers.authentication.jwt_auth_users import router as login_router
+from routers.main.user_router import router as users_router
+from routers.main.rol_router import router as rol_router
+from routers.main.views_router import router as views_router
+from routers.main.permisions_router import router as permissions_router
+from routers.main.tasks_router import router as tasks_router
+from routers.main.permissions_groups_router import router as permissions_group_router
+from routers.main.group_tasks_views_router import router as groups_tasks_views_router
+from routers.main.group_tasks_router import router as group_tasks_router
+from routers.main.files_tasks_type_router import router as files_tasks_type_router
+from routers.main.files_tasks_router import router as files_tasks_router
+from routers.main.files_tasks_groups_router import router as files_tasks_groups_router
 
 #main
 app = FastAPI()
@@ -36,6 +46,16 @@ app.add_middleware(
 
 #Invocaione de los Routers
 app.include_router(login_router)
-
+app.include_router(users_router)
+app.include_router(rol_router)
+app.include_router(views_router)
+app.include_router(permissions_router)
+app.include_router(tasks_router)
+app.include_router(permissions_group_router)
+app.include_router(groups_tasks_views_router)
+app.include_router(group_tasks_router)
+app.include_router(files_tasks_type_router)
+app.include_router(files_tasks_router)
+app.include_router(files_tasks_groups_router)
 
 

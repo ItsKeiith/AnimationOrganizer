@@ -18,4 +18,4 @@ class PermissionsGroup(Base):
     permission_pk = Column(Integer, ForeignKey("permission.permission_pk")) 
     
     #Relationships
-    permission = relationship("Permission", back_populates="permission_groups")
+    permission = relationship("Permissions", back_populates="permission_groups")

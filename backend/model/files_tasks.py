@@ -21,5 +21,5 @@ class FilesTasks(Base):
  
 
     #Relationships
-    file_task_groups = relationship("FilesTasksGroups", back_populates="file_task")
-    file_task_type = relationship("FilesTasksType", back_populates="file_tasks")
+    files_tasks_groups = relationship("FilesTasksGroups", back_populates="file_task")
+    file_task_types = relationship("FilesTasksTypes", back_populates="file_tasks")

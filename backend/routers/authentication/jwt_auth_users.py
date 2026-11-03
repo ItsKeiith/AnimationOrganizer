@@ -7,8 +7,8 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy.orm import Session
 
-from model.rol import Roles
-from model.user import Users
+from model.rol import Role
+from model.user import User
 from database.database import SessionLocal
 
 import os
@@ -45,7 +45,7 @@ def get_db():
 
 # Buscador de usuario 
 def search_user_db(username: str, db: Session):
-    user = db.query(Users).filter(Users.user_name == username).first()
+    user = db.query(User).filter(User.user_name == username).first()
     if user:
         return UserDB(
             users_pk=user.users_pk,

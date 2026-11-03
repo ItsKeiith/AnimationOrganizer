@@ -8,12 +8,12 @@ from model.rol import Role
 from model.tasks import Tasks
 from model.files_tasks import FilesTasks
 from model.files_tasks_groups import FilesTasksGroups
-from model.files_tasks_type import FilesTasksType
+from model.files_tasks_type import FilesTasksTypes
 from model.groups_tasks_views import GroupsTasksViews
 from model.groups_tasks import GroupTasks
 from model.permisions import Permissions
-from model.permissions_group import PermissionsGroups
-from model.views import Views  # Importación agregada
+from model.permissions_group import PermissionsGroup
+from model.views import Views   
 
 from sqlalchemy.orm import Session
 from database.database import SessionLocal, engine

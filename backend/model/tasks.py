@@ -16,11 +16,7 @@ class Tasks(Base):
     task_updated_at = Column(Date)
     is_active = Column(Boolean, default=True)
     
- 
-    
-    #Foreign Keys
-    group_tasks_pk = Column(Integer, ForeignKey("group_tasks.group_tasks_pk")) 
-    
     #Relationships
     group_tasks = relationship("GroupTasks", back_populates="task")
     group_tasks_views = relationship("GroupsTasksViews", back_populates="task")
+    files_tasks_groups = relationship("FilesTasksGroups", back_populates="task")

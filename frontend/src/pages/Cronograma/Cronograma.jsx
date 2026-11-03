@@ -1,16 +1,11 @@
-import React from 'react'
-import MainLayout from "../../layouts/MainLayout";
-
+import React from 'react';
 
 function Cronograma() {
   return (
     <div>
-        <MainLayout>
-        Cronograma
-        
-        </MainLayout>
-        </div>
-  )
+        <h1>Cronograma</h1>
+    </div>
+  );
 }
 
-export default Cronograma
+export default Cronograma;

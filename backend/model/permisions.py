@@ -15,4 +15,4 @@ class Permissions(Base):
     
     
     #Relationships
-    permission_groups = relationship("PermissionGroup", back_populates="permission")
+    permission_groups = relationship("PermissionsGroup", back_populates="permission")

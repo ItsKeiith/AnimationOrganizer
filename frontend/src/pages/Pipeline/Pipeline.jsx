@@ -1,16 +1,11 @@
-import React from 'react'
-import MainLayout from "../../layouts/MainLayout";
-
+import React from 'react';
 
 function Pipeline() {
   return (
     <div>
-        <MainLayout>
-        Pipeline
-        
-        </MainLayout>
-        </div>
-  )
+        <h1>Pipeline</h1>
+    </div>
+  );
 }
 
-export default Pipeline
+export default Pipeline;

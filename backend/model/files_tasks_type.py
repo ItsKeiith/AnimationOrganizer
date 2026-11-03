@@ -14,4 +14,4 @@ class FilesTasksTypes(Base):
  
 
     #Relationships
-    file_tasks = relationship("FilesTasks", back_populates="file_task_type")
+    file_tasks = relationship("FilesTasks", back_populates="file_task_types")

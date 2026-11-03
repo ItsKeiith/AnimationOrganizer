@@ -18,5 +18,5 @@ class GroupsTasksViews(Base):
     task_pk = Column(Integer, ForeignKey("tasks.tasks_pk"))
 
     #Relationships
-    task = relationship("Tasks", back_populates="groups_tasks_views")
+    task = relationship("Tasks", back_populates="group_tasks_views")
     views = relationship("Views", back_populates="groups_tasks_views")

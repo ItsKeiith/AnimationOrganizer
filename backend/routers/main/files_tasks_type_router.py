@@ -12,7 +12,8 @@ from model.files_tasks_type import FilesTasksTypes
 from model.groups_tasks_views import GroupsTasksViews
 from model.groups_tasks import GroupTasks
 from model.permisions import Permissions
-from model.permissions_group import PermissionsGroups
+from model.permissions_group import PermissionsGroup
+from model.views import Views   
 
 from sqlalchemy.orm import Session
 from database.database import SessionLocal, engine
