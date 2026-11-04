@@ -1,3 +1,7 @@
+Requerimientos del backend
+
+https://drive.google.com/file/d/1GmIJMND4zKeZA3u0kDYf8_oLx8lAugkU/view?usp=sharing
+
 Recordar que el proyecto se corre con:
 desde el backend uvicorn main:app --reload
 desde el front npm start
