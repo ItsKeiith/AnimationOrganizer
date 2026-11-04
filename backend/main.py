@@ -1,18 +1,22 @@
 #FastApi
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List
+from dotenv import load_dotenv  
+import requests
+import os
 
 #Middleware
 from fastapi.middleware.cors import CORSMiddleware
 
+#SQL
+from sqlalchemy.orm import Session
+from database.database import SessionLocal, engine
+
 
 
 #Routers
-
-
-#Users
 from routers.authentication.jwt_auth_users import router as login_router
 from routers.main.user_router import router as users_router
 from routers.main.rol_router import router as rol_router
@@ -58,4 +62,11 @@ app.include_router(files_tasks_type_router)
 app.include_router(files_tasks_router)
 app.include_router(files_tasks_groups_router)
 
+#Funcion de Sesion de la base de datos 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
