@@ -1,25 +1,55 @@
-/* Contenedor principal */
+/* Contenedor general del pipeline */
+.pipeline-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+/* Header del Proyecto con color suavizado de fondo */
+.project-header {
+  width: 100%;
+  background-color: #2c2f3346;
+  color: #000000b0;
+  text-align: center;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.project-header h2 {
+  margin: 0;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Contenedor principal del reproductor */
 .video-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  background-color: #1a1a1a;
+  background-color: #1a1a1ab9;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px rgba(22, 114, 121, 0.3);
 }
 
-/* Video visaulizador central */
+/* Pantalla del video */
 .video-screen {
   width: 100%;
   aspect-ratio: 16 / 9;
-  background-color: #000;
+  background-color: #246ba549;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .video-element {
@@ -28,37 +58,61 @@
   object-fit: contain;
 }
 
-/* barra de control */
-.video-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 10px 15px;
-  background-color: #2d2d2d;
-  color: #fff;
+/* Texto cuando no hay contenido */
+.no-content-message {
+  color: #888;
+  font-size: 18px;
+  font-weight: 500;
 }
 
-/* botones de video */
-.control-button {
+/* Controles de video centrados (Play, Atrasar, Adelantar) */
+.video-controls-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 12px;
+  background-color: #21292b60;
+  gap: 15px;
+}
+
+.control-btn {
   background: none;
   border: none;
   color: #fff;
   cursor: pointer;
-  font-size: 16px;
-  padding: 5px 10px;
+  font-size: 14px;
+  padding: 6px 12px;
   border-radius: 4px;
+  background-color: #3d3d3d;
   transition: background-color 0.2s ease;
 }
 
-.control-button:hover {
-  background-color: #4a4a4a;
+.control-btn:hover {
+  background-color: #555;
 }
 
-/* Timeline */
+.play-main-btn {
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #14857d86;
+}
+
+.play-main-btn:hover {
+  background-color: #105646;
+}
+
+/* Barra de progreso inferior */
+.video-controls-bar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 15px;
+  background-color: #1c2d3d;
+}
+
 .progress-bar-container {
   flex-grow: 1;
-  margin: 0 15px;
   display: flex;
   align-items: center;
 }
@@ -78,29 +132,88 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #5ff0ce89; 
+  background: #14857d86;
   cursor: pointer;
 }
 
-/* timeline admin  */
+/* Timeline admin */
 .admin-timeline-section {
   width: 100%;
-  padding: 15px;
-  background-color: #222;
+  padding: 12px 15px;
+  background-color: #1841524f;
   border-top: 1px solid #444;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .admin-add-button {
-  background-color: #3acac1c0;
+  background-color: #14857d86;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
-  margin-bottom: 10px;
 }
 
 .admin-add-button:hover {
   background-color: #105646;
+}
+
+/* Área de Views con contenedor suave y botón de más */
+.views-section-container {
+  width: 100%;
+  background-color: #3f55668a;
+  border-radius: 8px;
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(6, 41, 70, 0.473);
+}
+
+.views-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #38414a;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.views-header-row h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+.add-view-button {
+  background-color: #14857d86;
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-view-button:hover {
+  background-color: #105646;
+}
+
+.views-content-area {
+  min-height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-views-text {
+  color: #888;
+  font-style: italic;
+  margin: 0;
 }
