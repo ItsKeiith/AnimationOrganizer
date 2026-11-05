@@ -14,6 +14,8 @@ from model.files_tasks_groups import FilesTasksGroups
 from model.files_tasks import FilesTasks
 from model.repository import Repository
 from model.project import Project
+from model.comments import Comments
+from model.repository_groups import RepositoryGroups
 
 
 Base.metadata.create_all(bind=engine)

@@ -29,6 +29,10 @@ from routers.main.group_tasks_router import router as group_tasks_router
 from routers.main.files_tasks_type_router import router as files_tasks_type_router
 from routers.main.files_tasks_router import router as files_tasks_router
 from routers.main.files_tasks_groups_router import router as files_tasks_groups_router
+from routers.main.repository_router import router as repository_router
+from routers.main.repository_groups_router import router as repository_groups_router
+from routers.main.comments_router import router as comments_router
+
 
 #main
 app = FastAPI()
@@ -61,6 +65,9 @@ app.include_router(group_tasks_router)
 app.include_router(files_tasks_type_router)
 app.include_router(files_tasks_router)
 app.include_router(files_tasks_groups_router)
+app.include_router(repository_router)
+app.include_router(repository_groups_router)
+app.include_router(comments_router)
 
 #Funcion de Sesion de la base de datos 
 def get_db():

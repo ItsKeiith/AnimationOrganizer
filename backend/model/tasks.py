@@ -29,5 +29,5 @@ class Tasks(Base):
     group_tasks = relationship("GroupTasks", back_populates="task")
     group_tasks_views = relationship("GroupsTasksViews", back_populates="task")
     files_tasks_groups = relationship("FilesTasksGroups", back_populates="task")
-    repository = relationship("Repository",back_populates="repository")
-    
+    repositorygroups = relationship("RepositoryGroups", back_populates="task")  
+    comments = relationship("Comments", back_populates = "task")  

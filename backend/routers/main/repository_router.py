@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List
@@ -24,7 +25,6 @@ router = APIRouter()
 
 class RepositoryClass(BaseModel):
     repository_pk: int
-    tasks_fk: int
     link: str
     repository_description: str
     is_active: bool
