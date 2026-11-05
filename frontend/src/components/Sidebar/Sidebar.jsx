@@ -33,6 +33,13 @@ function Sidebar() {
                         Pipeline
                     </button>
 
+                    <button
+                        className="Buttom"
+                        onClick={() => navigate("/produccion")}
+                    >
+                        Produccion
+                    </button>
+
 
                     <button
                         className="Buttom"

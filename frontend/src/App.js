@@ -6,6 +6,8 @@ import Pipeline from './pages/Pipeline/Pipeline.jsx';
 import Repositorio from './pages/Repositorio/Repositorio.jsx';
 import Cronograma from './pages/Cronograma/Cronograma.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
+import VentanaGestionProyectos from './pages/VentanaGestionProyectos/VentanaGestionProyectos.jsx';
+import VentanaGestionProduccion from './pages/VentanaGestionProduccion/VentanaGestionProduccion.jsx';
 
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
         <Route path="/" element={<Login />} />
 
         <Route element={<MainLayout />}>
+          <Route path="/proyectos" element={<VentanaGestionProyectos />} />
+          <Route path="/produccion" element={<VentanaGestionProduccion />} />
           <Route path="/dashboard" element={<MainDashboard />} />
           <Route path="/pipeline" element={<Pipeline />} />
           <Route path="/repositorio" element={<Repositorio />} />
