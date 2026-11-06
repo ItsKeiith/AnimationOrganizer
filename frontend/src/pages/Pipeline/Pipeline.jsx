@@ -1,12 +1,71 @@
 import React, { useRef, useState } from 'react';
 import './Pipeline.css';
 
-function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) {
+async function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // Manejo de play y pause
+
+  //------------------CRUD de las views----------------
+
+  //Con este fetch vamso a mandar el post de la views
+  //El putno va a ser generar las views en el back end 
+  //Por cada view generada se muestra en el front una barra nueva donde se van a ir asignando los videos de cada view
+  //las taks 
+  try {
+    const response = await fetch('http://localhost:8000/views', {
+        method: 'POST',
+        headers: {
+        },
+        body: formData,
+      });
+    }
+    catch (error) {
+      console.error('Error al crear la vista:', error);
+    }
+
+    try {
+      const response = await fetch('http://localhost:8000/views', {
+          method: 'PUT',
+          headers: {
+          },
+          body: formData,
+        });
+      }
+      catch (error) {
+        console.error('Error al actualizar la vista:', error);
+      }
+      try {
+        const response = await fetch('http://localhost:8000/views', {
+            method: 'DELETE',
+            headers: {
+            },
+            body: formData,
+          });
+        }
+        catch (error) {
+          console.error('Error al eliminar la vista:', error);
+        }
+
+//--------------------Crud de las taks*--------------------
+//Con este fetch vamso a mandar el post de la taks
+//El putno va a ser generar las taks en el back end
+
+try {
+  const response = await fetch('http://localhost:8000/taks', {
+      method: 'POST',
+      headers: {
+      },
+      body: formData,
+    });
+  }
+  catch (error) {
+    console.error('Error al crear la taks:', error);
+  }
+
+
+  // Play
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
@@ -18,14 +77,14 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
     }
   };
 
-  // Botón para adelantar 5 segundos
+  // El  Fassforward
   const handleFastForward = () => {
     if (videoRef.current) {
       videoRef.current.currentTime += 5;
     }
   };
 
-  // Botón para atrasar 5 segundos
+  // El Backforward
   const handleRewind = () => {
     if (videoRef.current) {
       videoRef.current.currentTime -= 5;
