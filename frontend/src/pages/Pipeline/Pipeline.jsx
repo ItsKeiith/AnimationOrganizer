@@ -1,71 +1,69 @@
 import React, { useRef, useState } from 'react';
 import './Pipeline.css';
 
-async function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) {
+// 1. Quitamos el "async" de aquí. React no soporta componentes async.
+function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
-
-  //------------------CRUD de las views----------------
-
-  //Con este fetch vamso a mandar el post de la views
-  //El putno va a ser generar las views en el back end 
-  //Por cada view generada se muestra en el front una barra nueva donde se van a ir asignando los videos de cada view
-  //las taks 
-  try {
-    const response = await fetch('http://localhost:8000/views', {
-        method: 'POST',
-        headers: {
-        },
-        body: formData,
-      });
-    }
-    catch (error) {
-      console.error('Error al crear la vista:', error);
-    }
+  // ------------------ CRUD de las views ----------------
+  // 2. Encapsulamos los fetch en funciones. Así no se ejecutan solos al cargar la página.
+  
+  const handleCreateView = async () => {
+    // Aquí debes definir la información que vas a enviar
+    // const formData = new FormData(); 
+    // formData.append('views_name', 'Nueva Vista');
 
     try {
       const response = await fetch('http://localhost:8000/views', {
-          method: 'PUT',
-          headers: {
-          },
-          body: formData,
-        });
-      }
-      catch (error) {
-        console.error('Error al actualizar la vista:', error);
-      }
-      try {
-        const response = await fetch('http://localhost:8000/views', {
-            method: 'DELETE',
-            headers: {
-            },
-            body: formData,
-          });
-        }
-        catch (error) {
-          console.error('Error al eliminar la vista:', error);
-        }
+        method: 'POST',
+        // body: formData, // Descomenta esto cuando definas formData
+      });
+      console.log('Vista creada');
+    } catch (error) {
+      console.error('Error al crear la vista:', error);
+    }
+  };
 
-//--------------------Crud de las taks*--------------------
-//Con este fetch vamso a mandar el post de la taks
-//El putno va a ser generar las taks en el back end
+  const handleUpdateView = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/views', {
+        method: 'PUT',
+        // body: formData,
+      });
+    } catch (error) {
+      console.error('Error al actualizar la vista:', error);
+    }
+  };
 
-try {
-  const response = await fetch('http://localhost:8000/taks', {
-      method: 'POST',
-      headers: {
-      },
-      body: formData,
-    });
-  }
-  catch (error) {
-    console.error('Error al crear la taks:', error);
-  }
+  const handleDeleteView = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/views', {
+        method: 'DELETE',
+        // body: formData,
+      });
+    } catch (error) {
+      console.error('Error al eliminar la vista:', error);
+    }
+  };
 
+  // -------------------- Crud de las tasks --------------------
+  
+  const handleCreateTask = async () => {
+    try {
+      // Ojo: tu endpoint en el backend es /tasks (con 's'), no /taks
+      const response = await fetch('http://localhost:8000/tasks', {
+        method: 'POST',
+        // body: formData,
+      });
+    } catch (error) {
+      console.error('Error al crear la tarea:', error);
+    }
+  };
 
-  // Play
+  // -------------------- Controles de Video --------------------
+
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (videoRef.current.paused) {
@@ -77,29 +75,27 @@ try {
     }
   };
 
-  // El  Fassforward
   const handleFastForward = () => {
     if (videoRef.current) {
       videoRef.current.currentTime += 5;
     }
   };
 
-  // El Backforward
   const handleRewind = () => {
     if (videoRef.current) {
       videoRef.current.currentTime -= 5;
     }
   };
 
-  // Actualizar la barra de progreso
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const current = videoRef.current.currentTime;
     const duration = videoRef.current.duration;
-    setProgress((current / duration) * 100);
+    if (duration) {
+      setProgress((current / duration) * 100);
+    }
   };
 
-  // Control manual de la barra de progreso
   const handleProgressChange = (e) => {
     if (!videoRef.current) return;
     const newTime = (e.target.value / 100) * videoRef.current.duration;
@@ -107,14 +103,14 @@ try {
     setProgress(e.target.value);
   };
 
-  // Solo admin: Agregar Timeline
   const handleAddTimeline = () => {
     console.log("Timeline agregado al proyecto");
   };
 
-  // Solo admin: Agregar Vista
   const handleAddView = () => {
     console.log("Nueva vista agregada al proyecto");
+    // Puedes llamar a tu fetch aquí cuando el usuario haga clic en el botón de agregar
+    // handleCreateView(); 
   };
 
   return (
@@ -142,7 +138,7 @@ try {
           )}
         </div>
 
-        {/* Controles del video: Atrasar, Play/Pause centrado, Adelantar */}
+        {/* Controles del video */}
         <div className="video-controls-centered">
           <button onClick={handleRewind} className="control-btn" title="Atrasar 5s">
             ◀◀
@@ -157,7 +153,7 @@ try {
           </button>
         </div>
 
-        {/* Barra de progreso / timeline del video */}
+        {/* Barra de progreso */}
         <div className="video-controls-bar">
           <div className="progress-bar-container">
             <input
@@ -183,6 +179,7 @@ try {
       <div className="views-section-container">
         <div className="views-header-row">
           <h3>Vistas de Produccion</h3>
+          {/* Este botón ahora disparará la función correcta */}
           <button onClick={handleAddView} className="add-view-button" title="Agregar vista">
             +
           </button>
