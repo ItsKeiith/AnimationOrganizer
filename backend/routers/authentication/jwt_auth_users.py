@@ -8,7 +8,7 @@ from jwt.exceptions import InvalidTokenError
 from sqlalchemy.orm import Session
 
 from model.rol import Role
-from model.user import User
+from model.user import User as UserModel
 from database.database import SessionLocal
 
 import os
@@ -28,7 +28,7 @@ crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class User(BaseModel):
     users_pk: int
     user_name: str
-    email: str
+    user_email: str
     creation_date: date
     user_rol_pk: int
     disable: bool = False  
@@ -44,17 +44,18 @@ def get_db():
         db.close()
 
 # Buscador de usuario 
+# Buscador de usuario 
 def search_user_db(username: str, db: Session):
-    user = db.query(User).filter(User.user_name == username).first()
+    user = db.query(UserModel).filter(UserModel.user_name == username).first()
     if user:
         return UserDB(
-            users_pk=user.users_pk,
+            users_pk=user.user_pk,
             user_name=user.user_name,
-            email=user.email,
-            creation_date=user.creation_date,
-            user_rol_pk=user.user_rol_pk,
-            password=user.password, 
-            disable=user.disable if hasattr(user, 'disable') else False
+            user_email=user.user_email,
+            creation_date=user.user_created_at,  
+            user_rol_pk=user.role_pk,            
+            password=user.user_password,         
+            disable=not user.is_active           
         )
     return None
     
@@ -82,7 +83,7 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
     return {
         "access_token": jwt.encode(access_token, SECRET, algorithm=ALGORITMO),
         "token_type": "bearer",
-        "email": user.email,
+        "user_email": user.user_email,
         "username": user.user_name
     }
 

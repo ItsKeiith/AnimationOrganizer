@@ -17,4 +17,4 @@ class Views(Base):
 
     #Relationships
     groups_tasks_views = relationship("GroupsTasksViews", back_populates="views")
-    project = relationship("Views", back_populates="views")
+    project = relationship("Project", back_populates="views")
