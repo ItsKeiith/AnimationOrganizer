@@ -23,6 +23,7 @@ router = APIRouter()
 class ViewsClass(BaseModel):
     views_pk: int
     views_name: str
+    views_order: int   # <-- ATRIBUTO AGREGADO AQUÍ
     is_active: bool
     groups_tasks_views_pk: int
     
@@ -38,7 +39,8 @@ async def get_db():
 # GET
 @router.get("/views")
 async def obtener_views(db: Session = Depends(get_db)):
-    views = db.query(Views).all()
+    # Los ordenamos por la columna views_order por defecto
+    views = db.query(Views).order_by(Views.views_order).all()
 
     return {
         "mensaje": "Conexión a la base de datos exitosa", 
@@ -65,6 +67,7 @@ def create_view(
     new_view = Views(
         views_pk=view_data.views_pk,
         views_name=view_data.views_name,
+        views_order=view_data.views_order, # <-- ATRIBUTO AGREGADO AQUÍ
         is_active=view_data.is_active,
         groups_tasks_views_pk=view_data.groups_tasks_views_pk
     )
@@ -88,6 +91,7 @@ def create_views_bulk(
         Views(
             views_pk=item.views_pk,
             views_name=item.views_name,
+            views_order=item.views_order, # <-- ATRIBUTO AGREGADO AQUÍ
             is_active=item.is_active,
             groups_tasks_views_pk=item.groups_tasks_views_pk
         )
@@ -119,6 +123,7 @@ def update_view(
         )
 
     view_actual.views_name = view_data.views_name
+    view_actual.views_order = view_data.views_order # <-- ATRIBUTO AGREGADO AQUÍ
     view_actual.is_active = view_data.is_active
     view_actual.groups_tasks_views_pk = view_data.groups_tasks_views_pk
 

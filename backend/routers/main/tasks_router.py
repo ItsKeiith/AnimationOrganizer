@@ -22,13 +22,15 @@ router = APIRouter()
 
 class TasksClass(BaseModel):
     tasks_pk: int
-    tasks_name: str
-    tasks_description: str
-    tasks_status: str
-    tasks_created_at: date
-    tasks_updated_at: date
+    task_name: str
+    task_description: str
+    task_status: str
+    task_created_at: date
+    task_updated_at: date
+    tasks_order: int
+    tasks_duration:str
+    is_estatic:bool
     is_active: bool
-    groups_tasks_pk: int
     
 # Conexion a la base de datos 
 async def get_db():
@@ -57,7 +59,7 @@ def create_task(
     db: Session = Depends(get_db)
 ):
     existing_task = db.query(Tasks).filter(
-        Tasks.tasks_name == task_data.tasks_name
+        Tasks.task_name == task_data.task_name
     ).first()
 
     if existing_task:
@@ -68,13 +70,15 @@ def create_task(
 
     new_task = Tasks(
         tasks_pk=task_data.tasks_pk,
-        tasks_name=task_data.tasks_name,
-        tasks_description=task_data.tasks_description,
-        tasks_status=task_data.tasks_status,
-        tasks_created_at=task_data.tasks_created_at,
-        tasks_updated_at=task_data.tasks_updated_at,
+        task_name=task_data.task_name,
+        task_description=task_data.task_description,
+        task_status=task_data.task_status,
+        task_created_at=task_data.task_created_at,
+        task_updated_at=task_data.task_updated_at,
+        tasks_order = task_data.tasks_order,
+        tasks_duration = task_data.tasks_duration,
+        is_estatic = task_data.is_estatic,
         is_active=task_data.is_active,
-        groups_tasks_pk=task_data.groups_tasks_pk
     )
 
     db.add(new_task)
@@ -94,14 +98,16 @@ def create_tasks_bulk(
 ):
     tasks_to_insert = [
         Tasks(
-            tasks_pk=task.tasks_pk,
-            tasks_name=task.tasks_name,
-            tasks_description=task.tasks_description,
-            tasks_status=task.tasks_status,
-            tasks_created_at=task.tasks_created_at,
-            tasks_updated_at=task.tasks_updated_at,
-            is_active=task.is_active,
-            groups_tasks_pk=task.groups_tasks_pk
+        tasks_pk=task.tasks_pk,
+        task_name=task.task_name,
+        task_description=task.task_description,
+        task_status=task.task_status,
+        task_created_at=task.task_created_at,
+        task_updated_at=task.task_updated_at,
+        tasks_order = task.tasks_order,
+        tasks_duration = task.tasks_duration,
+        is_estatic = task.is_estatic,
+        is_active=task.is_active,
         )
         for task in tasks_list
     ]
@@ -130,13 +136,15 @@ def update_task(
             detail="Task not found"
         )
 
-    task_actual.tasks_name = task_data.tasks_name
-    task_actual.tasks_description = task_data.tasks_description
-    task_actual.tasks_status = task_data.tasks_status
-    task_actual.tasks_created_at = task_data.tasks_created_at
-    task_actual.tasks_updated_at = task_data.tasks_updated_at
-    task_actual.is_active = task_data.is_active
-    task_actual.groups_tasks_pk = task_data.groups_tasks_pk
+    task_actual.task_name = task_data.task_name,
+    task_actual.task_description = task_data.task_description,
+    task_actual.task_status = task_data.task_status,
+    task_actual.task_created_at = task_data.task_created_at,
+    task_actual.task_updated_at = task_data.task_updated_at,
+    task_actual.tasks_order = task_data.tasks_order,
+    task_actual.tasks_duration = task_data.tasks_duration,
+    task_actual.is_estatic = task_data.is_estatic,
+    task_actual.is_active = task_data.is_active,
 
     db.commit()
     db.refresh(task_actual)
@@ -160,5 +168,3 @@ async def borrar_task(tasks_pk: int, db: Session = Depends(get_db)):
     db.commit()
     
     return {"mensaje": f"Task con ID {tasks_pk} desactivado correctamente"}
-
-

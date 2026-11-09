@@ -8,6 +8,7 @@ class Views(Base):
 
     views_pk = Column(Integer, primary_key=True, index=True)
     views_name = Column(String, unique=True, index=True)
+    views_order = Column(Integer)
     is_active = Column(Boolean, default=True)
     
  

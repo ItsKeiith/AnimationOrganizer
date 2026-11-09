@@ -117,4 +117,3 @@ async def current_user(user: User = Depends(auth_user)):
 @router.get("/users/me")
 async def me(user: User = Depends(current_user)):
     return user
-

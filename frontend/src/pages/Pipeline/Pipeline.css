@@ -11,7 +11,7 @@
   box-sizing: border-box;
 }
 
-/* Header del Proyecto con color suavizado de fondo */
+/* TItulo epico del proyecto * hay que cambairlo cuando la pestana de proyectos este hecha y hacerla dinamica */
 .project-header {
   width: 100%;
   background-color: #2c2f3346;
@@ -58,14 +58,13 @@
   object-fit: contain;
 }
 
-/* Texto cuando no hay contenido */
+/* DEfault message */
 .no-content-message {
   color: #888;
   font-size: 18px;
   font-weight: 500;
 }
 
-/* Controles de video centrados (Play, Atrasar, Adelantar) */
 .video-controls-centered {
   display: flex;
   justify-content: center;
@@ -160,11 +159,10 @@
   background-color: #105646;
 }
 
-/* Área de Views con contenedor suave y botón de más */
 .views-section-container {
   width: 100%;
-  background-color: #3f55668a;
-  border-radius: 8px;
+  background-color: #3863858a;
+  border-radius: 10px;
   padding: 20px;
   box-sizing: border-box;
   box-shadow: 0 2px 4px rgba(6, 41, 70, 0.473);
@@ -216,4 +214,246 @@
   color: #888;
   font-style: italic;
   margin: 0;
+}
+
+/* VIews */
+
+.views-content-area {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* Espacio entre cada vista */
+  width: 100%;
+
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Contendor de las vies idividual Ojo 
+Si hay que rechecar como estan hechos los contendores de views
+*/
+.view-item-card {
+  background-color: #2a2f35;
+  border: 1px solid #38414a;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeInSlide 0.4s ease-out forwards;
+}
+
+.view-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.view-item-header h4 {
+  margin: 0;
+  color: #5ff0ce89;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+/* PUT  */
+.view-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* BOTones*/
+.view-action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  color: white;
+  transition: opacity 0.2s ease;
+}
+
+.view-action-btn:hover {
+  opacity: 0.8;
+}
+
+.update-btn {
+  background-color: #334774;
+}
+
+.delete-btn {
+  background-color: #172136;
+}
+
+/* TAsks Desplegables */
+
+.task-dropdown-container {
+  border-top: 1px solid #38414a;
+  padding-top: 10px;
+  margin-top: 5px;
+}
+
+.task-dropdown-btn {
+  background-color: transparent;
+  color: #aaa;
+  border: 1px solid #555;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.task-dropdown-btn:hover {
+  background-color: #38414a;
+}
+
+.task-dropdown-menu {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.task-dropdown-menu button {
+  flex: 1;
+  padding: 6px;
+  background-color: #3d3d3d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.task-dropdown-menu button:hover {
+  background-color: #555;
+}
+
+/*Aqui esta el heades de las vistas de los titulos de las viwes*/
+.views-header-left {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+/* botones para subir y bajar el orden */
+.order-btn {
+  background-color: transparent;
+  color: white;
+  border: 1px solid #555;
+  font-size: 10px;
+}
+
+.order-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.order-btn:hover:not(:disabled) {
+  background-color: #555;
+}
+
+/* Toda esta seccion es el desplegables de tasks:*/
+
+.task-dropdown-menu-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+  background-color: #1e2328;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #38414a;
+}
+
+.create-task-btn {
+  width: 100%;
+  padding: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  transition: opacity 0.2s ease;
+}
+
+.create-task-btn:hover {
+  opacity: 0.8;
+}
+
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2a2f35;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+
+.task-name {
+  color: #d1d5db;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.task-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.task-actions button:hover {
+  transform: scale(1.2);
+}
+
+.empty-tasks-text {
+  color: #6b7280;
+  font-size: 12px;
+  text-align: center;
+  margin: 5px 0;
+  font-style: italic;
 }
