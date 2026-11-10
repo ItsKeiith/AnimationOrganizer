@@ -14,6 +14,8 @@ class GroupsTasksViews(Base):
     
     #Foreign Keys
     task_pk = Column(Integer, ForeignKey("tasks.tasks_pk"))
+    views_pk = Column(Integer, ForeignKey("views.views_pk"))
+
 
     #Relationships
     task = relationship("Tasks", back_populates="group_tasks_views")

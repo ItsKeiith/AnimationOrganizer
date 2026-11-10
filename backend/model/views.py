@@ -11,11 +11,6 @@ class Views(Base):
     views_order = Column(Integer)
     is_active = Column(Boolean, default=True)
     
- 
-    
-    #Foreign Keys
-    groups_tasks_views_pk = Column(Integer, ForeignKey("groups_tasks_views.groups_tasks_views_pk"))
-
     #Relationships
     groups_tasks_views = relationship("GroupsTasksViews", back_populates="views")
     project = relationship("Project", back_populates="views")

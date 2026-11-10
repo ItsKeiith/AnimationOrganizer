@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import date
 
 from model.user import User
@@ -21,7 +21,7 @@ from database.database import SessionLocal, engine
 router = APIRouter()
 
 class TasksClass(BaseModel):
-    tasks_pk: int
+    tasks_pk: Optional[int] = None
     task_name: str
     task_description: str
     task_status: str
@@ -41,16 +41,28 @@ async def get_db():
         db.close()
 
 # Endpoints
-# GET
+#GET
 @router.get("/tasks")
-async def obtener_tasks(db: Session = Depends(get_db)):
-    tasks = db.query(Tasks).all()
+def get_tasks(db: Session = Depends(get_db)):
 
-    return {
-        "mensaje": "Conexión a la base de datos exitosa", 
-        "total_part": len(tasks),
-        "data": tasks
-    }
+    tasks = db.query(Tasks).all()
+    
+    result = []
+    for task in tasks:
+        task_dict = {
+            "tasks_pk": task.tasks_pk,
+            "task_name": task.task_name,
+            "task_description": task.task_description,
+            "is_estatic": task.is_estatic,
+            "tasks_duration": task.tasks_duration,
+            "tasks_order": task.tasks_order,
+            "is_active": task.is_active,
+            #Aqui dejamos un join para la tabla intermedia 
+            "groups_tasks_pk": task.group_tasks_views[0].groups_tasks_views_pk if task.group_tasks_views else None 
+        }
+        result.append(task_dict)
+        
+    return {"data": result}
 
 # POST
 @router.post("/tasks")
@@ -69,7 +81,6 @@ def create_task(
         )
 
     new_task = Tasks(
-        tasks_pk=task_data.tasks_pk,
         task_name=task_data.task_name,
         task_description=task_data.task_description,
         task_status=task_data.task_status,
@@ -98,7 +109,6 @@ def create_tasks_bulk(
 ):
     tasks_to_insert = [
         Tasks(
-        tasks_pk=task.tasks_pk,
         task_name=task.task_name,
         task_description=task.task_description,
         task_status=task.task_status,

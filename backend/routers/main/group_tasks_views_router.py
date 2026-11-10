@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import date
 
 from model.user import User
@@ -21,10 +21,11 @@ from database.database import SessionLocal, engine
 router = APIRouter()
 
 class GroupsTasksViewsClass(BaseModel):
-    groups_tasks_views_pk: int
+    groups_tasks_views_pk: Optional[int] = None
     groups_tasks_views_name: str
     is_active: bool
-    tasks_pk: int
+    task_pk: int
+    views_pk: int
     
 # Conexion a la base de datos 
 async def get_db():
@@ -66,7 +67,8 @@ def create_groups_tasks_view(
         groups_tasks_views_pk=view_data.groups_tasks_views_pk,
         groups_tasks_views_name=view_data.groups_tasks_views_name,
         is_active=view_data.is_active,
-        tasks_pk=view_data.tasks_pk
+        task_pk=view_data.task_pk,
+        views_pk=view_data.views_pk
     )
 
     db.add(new_view)
@@ -89,7 +91,8 @@ def create_groups_tasks_views_bulk(
             groups_tasks_views_pk=item.groups_tasks_views_pk,
             groups_tasks_views_name=item.groups_tasks_views_name,
             is_active=item.is_active,
-            tasks_pk=item.tasks_pk
+            task_pk=item.task_pk,
+            views_pk=item.views_pk
         )
         for item in views_list
     ]
@@ -120,7 +123,8 @@ def update_groups_tasks_view(
 
     view_actual.groups_tasks_views_name = view_data.groups_tasks_views_name
     view_actual.is_active = view_data.is_active
-    view_actual.tasks_pk = view_data.tasks_pk
+    view_actual.task_pk = view_data.task_pk
+    view_actual.views_pk = view_data.views_pk
 
     db.commit()
     db.refresh(view_actual)
