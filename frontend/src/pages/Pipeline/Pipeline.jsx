@@ -2,6 +2,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import ViewsSection from './ViewsSection';
 import './Pipeline.css';
 
+import Box from '@mui/material/Box';
+import Slider from '@mui/material/Slider';
+
+// Utilities
 const parseDuration = (durStr) => {
   if (!durStr) return 60;
   const parts = durStr.split(':');
@@ -21,6 +25,7 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [videoDuration, setVideoDuration] = useState(300);
+  const [timelineScale, setTimelineScale] = useState(1);
 
   const [views, setViews] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -29,12 +34,19 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
   const [newViewNameInput, setNewViewNameInput] = useState('');
   const [openDropdownViewId, setOpenDropdownViewId] = useState(null);
 
+  const [activeTimelineViewId, setActiveTimelineViewId] = useState(null);
+
+  // Modals Forms
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetViewId, setTargetViewId] = useState(null);
-  const [taskForm, setTaskForm] = useState({ task_name: '', task_description: '', is_estatic: false });
+  const [taskForm, setTaskForm] = useState({ task_name: '', task_description: '', task_due_date: '', is_estatic: false });
 
-  const [activeTimelineViewId, setActiveTimelineViewId] = useState(null);
+  const [editTaskForm, setEditTaskForm] = useState(null); // Estado para el nuevo Modal de Edición
+
+  // Refs for Drag & Drop
   const dragRef = useRef({ isDragging: false, taskId: null, startX: 0, startDur: 0, taskRef: null });
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [draggedViewId, setDraggedViewId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,12 +69,19 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
     fetchData();
   }, []);
 
+  // Esta funcion es para el resizing de las tareas en la timeline, no para reordenarlas
+  // Se activa al hacer click en el borde derecho de la tarea y arrastrar
   const handleDragStart = (e, task) => {
     e.preventDefault();
-    const timelineContainer = document.querySelector('.timeline-task-tracks');
-    const timelineWidth = timelineContainer ? timelineContainer.clientWidth : 800;
+    e.stopPropagation();
 
-    dragRef.current = { isDragging: true, taskId: task.tasks_pk, startX: e.clientX, startDur: parseDuration(task.tasks_duration), timelineWidth, taskRef: task };
+    const timelineInnerContainer = document.querySelector('.timeline-inner-track');
+    const timelineWidth = timelineInnerContainer ? timelineInnerContainer.clientWidth : 800;
+
+    dragRef.current = {
+      isDragging: true, taskId: task.tasks_pk, startX: e.clientX,
+      startDur: parseDuration(task.tasks_duration), timelineWidth, taskRef: task
+    };
 
     const handleMouseMove = (moveEvent) => {
       if (!dragRef.current.isDragging) return;
@@ -82,10 +101,14 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
       const deltaSecs = (deltaX / dragRef.current.timelineWidth) * videoDuration;
       let finalDur = Math.max(2, dragRef.current.startDur + deltaSecs);
 
+      const todayDate = new Date().toISOString().split('T')[0];
       const updatedTask = {
         ...dragRef.current.taskRef,
         tasks_duration: formatDuration(finalDur),
-        task_updated_at: new Date().toISOString().split('T')[0]
+        task_created_at: dragRef.current.taskRef.task_created_at || todayDate,
+        task_status: dragRef.current.taskRef.task_status || "Pendiente",
+        task_due_date: dragRef.current.taskRef.task_due_date || todayDate,
+        task_updated_at: todayDate
       };
 
       try {
@@ -99,35 +122,75 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
     window.addEventListener('mouseup', handleMouseUp);
   };
 
-  const handleCreateView = async () => {
-    const finalViewName = newViewNameInput.trim() !== '' ? newViewNameInput : `view_${viewCounter}`;
+  //Reordenamiento de Tareas
+  const onDragStartTask = (e, taskId) => { setDraggedTaskId(taskId); e.dataTransfer.effectAllowed = "move"; };
+  const onDragOverTask = (e) => { e.preventDefault(); };
+  const onDropTask = async (e, targetTaskId) => {
+    e.preventDefault();
+    if (!draggedTaskId || draggedTaskId === targetTaskId) return;
 
-    // YA NO MANDAMOS views_pk
-    const newViewData = {
-      views_name: finalViewName,
-      views_order: views.length + 1,
-      is_active: true
-    };
+    const currentTasks = [...tasks];
+    const draggedIndex = currentTasks.findIndex(t => t.tasks_pk === draggedTaskId);
+    const targetIndex = currentTasks.findIndex(t => t.tasks_pk === targetTaskId);
+
+    // Evitamos intercambiar si alguna está bloqueada
+    if (currentTasks[draggedIndex].is_estatic || currentTasks[targetIndex].is_estatic) return;
+
+    const tempOrder = currentTasks[draggedIndex].tasks_order;
+    currentTasks[draggedIndex].tasks_order = currentTasks[targetIndex].tasks_order;
+    currentTasks[targetIndex].tasks_order = tempOrder;
+
+    setTasks(currentTasks);
+    setDraggedTaskId(null);
+
+    const todayDate = new Date().toISOString().split('T')[0];
+    const taskA = { ...currentTasks[draggedIndex], task_updated_at: todayDate };
+    const taskB = { ...currentTasks[targetIndex], task_updated_at: todayDate };
 
     try {
-      const response = await fetch('http://localhost:8000/views', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newViewData)
-      });
+      await fetch(`http://localhost:8000/tasks/${taskA.tasks_pk}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(taskA) });
+      await fetch(`http://localhost:8000/tasks/${taskB.tasks_pk}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(taskB) });
+    } catch (error) { console.error("Error updating order:", error); }
+  };
 
+  //Reordenamiento de Vistas
+  const onDragStartView = (e, viewId) => { setDraggedViewId(viewId); e.dataTransfer.effectAllowed = "move"; };
+  const onDragOverView = (e) => { e.preventDefault(); };
+  const onDropView = async (e, targetViewId) => {
+    e.preventDefault();
+    if (!draggedViewId || draggedViewId === targetViewId) return;
+
+    const currentViews = [...views];
+    const draggedIndex = currentViews.findIndex(v => v.views_pk === draggedViewId);
+    const targetIndex = currentViews.findIndex(v => v.views_pk === targetViewId);
+
+    const tempOrder = currentViews[draggedIndex].views_order;
+    currentViews[draggedIndex].views_order = currentViews[targetIndex].views_order;
+    currentViews[targetIndex].views_order = tempOrder;
+
+    const sortedViews = [...currentViews].sort((a, b) => a.views_order - b.views_order);
+    setViews(sortedViews);
+    setDraggedViewId(null);
+
+    const viewA = { ...currentViews[draggedIndex] };
+    const viewB = { ...currentViews[targetIndex] };
+
+    try {
+      await fetch(`http://localhost:8000/views/${viewA.views_pk}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(viewA) });
+      await fetch(`http://localhost:8000/views/${viewB.views_pk}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(viewB) });
+    } catch (error) { console.error("Error updating view order:", error); }
+  };
+
+  //Views CRUD 
+  const handleCreateView = async () => {
+    const finalViewName = newViewNameInput.trim() !== '' ? newViewNameInput : `view_${viewCounter}`;
+    const newViewData = { views_name: finalViewName, views_order: views.length + 1, is_active: true };
+    try {
+      const response = await fetch('http://localhost:8000/views', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newViewData) });
       if (response.ok) {
-        // Leemos lo que nos devolvió el backend (ya trae el ID real)
         const result = await response.json();
-        const createdView = result.data || result;
-
-        // Metemos la vista REAL a nuestro estado
-        setViews([...views, createdView]);
-        setViewCounter(viewCounter + 1);
-        setNewViewNameInput('');
-      } else {
-        const error = await response.json();
-        console.error("Error del backend:", error);
+        setViews([...views, result.data || result]);
+        setViewCounter(viewCounter + 1); setNewViewNameInput('');
       }
     } catch (error) { console.error('Error:', error); }
   };
@@ -135,13 +198,7 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
   const handleUpdateView = async (viewId, currentOrder) => {
     const updatedName = prompt("Escribe el nuevo nombre para esta vista:");
     if (!updatedName) return;
-    // Removed groups_tasks_views_pk
-    const updatedViewData = {
-      views_pk: viewId,
-      views_name: updatedName,
-      views_order: currentOrder,
-      is_active: true
-    };
+    const updatedViewData = { views_pk: viewId, views_name: updatedName, views_order: currentOrder, is_active: true };
     try {
       const response = await fetch(`http://localhost:8000/views/${viewId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedViewData) });
       if (response.ok) setViews(views.map(v => v.views_pk === viewId ? { ...v, views_name: updatedName } : v));
@@ -149,6 +206,8 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
   };
 
   const handleDeleteView = async (viewId) => {
+    const tieneTareas = tasks.some(t => t.views_pk === viewId && t.is_active !== false);
+    if (tieneTareas) { alert("⚠️ No puedes borrar esta vista porque tiene tareas enlazadas. Borra las tareas primero."); return; }
     if (!window.confirm("¿Seguro que deseas eliminar esta vista?")) return;
     try {
       const response = await fetch(`http://localhost:8000/views/${viewId}`, { method: 'DELETE' });
@@ -156,96 +215,78 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
     } catch (error) { console.error('Error:', error); }
   };
 
-  const moveViewOrder = async (index, direction) => {
-    if (index + direction < 0 || index + direction >= views.length) return;
-    const newViews = [...views];
-    const viewA = { ...newViews[index] }, viewB = { ...newViews[index + direction] };
-    viewA.views_order = viewB.views_order; viewB.views_order = newViews[index].views_order;
-    newViews[index] = viewB; newViews[index + direction] = viewA;
-    setViews(newViews);
-    try {
-      await fetch(`http://localhost:8000/views/${viewA.views_pk}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(viewA) });
-      await fetch(`http://localhost:8000/views/${viewB.views_pk}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(viewB) });
-    } catch (error) { console.error("Error:", error); }
-  };
-
   const toggleTaskDropdown = (viewId) => setOpenDropdownViewId(openDropdownViewId === viewId ? null : viewId);
 
-  const openTaskModal = (viewId) => { setTargetViewId(viewId); setTaskForm({ task_name: '', task_description: '', is_estatic: false }); setIsModalOpen(true); };
+  // Funciones para Modales de Tareas
+  const openTaskModal = (viewId) => { setTargetViewId(viewId); setTaskForm({ task_name: '', task_description: '', task_due_date: '', is_estatic: false }); setIsModalOpen(true); };
   const closeTaskModal = () => { setIsModalOpen(false); setTargetViewId(null); };
 
-  // =====================================================================
-  // AQUÍ ESTÁ LA LÓGICA DE DOBLE POST: CREAR TASK -> CREAR RELACIÓN
-  // =====================================================================
+  const openEditTaskModal = (task) => { setEditTaskForm({ ...task, task_due_date: task.task_due_date || '' }); };
+  const closeEditTaskModal = () => { setEditTaskForm(null); };
+
+  //Tasks CRUD
   const handleCreateTask = async () => {
     if (!taskForm.task_name.trim()) return alert("El nombre es obligatorio.");
     const todayDate = new Date().toISOString().split('T')[0];
 
-    // 1. Preparamos la data de la Task (ya no lleva relación aquí)
+    //Payload para crear TASKS
+    //PAYLOAD TASKS
+    //SI hay tema con el back a la hora de agregar las tasks hay que revisar este payload comparandolo con el backend 
     const newTaskData = {
-      tasks_pk: Math.floor(Math.random() * 1000000), // Si tu DB es autoincremental, el back lo reescribirá
       task_name: taskForm.task_name,
       task_description: taskForm.task_description || "Sin descripción",
       task_status: "Pendiente",
       task_created_at: todayDate,
       task_updated_at: todayDate,
-      tasks_order: tasks.filter(t => t.views_pk === targetViewId).length + 1, // Ahora usamos views_pk
+      task_due_date: taskForm.task_due_date || todayDate, // DUE DATE añadido
+      tasks_order: tasks.filter(t => t.views_pk === targetViewId).length + 1,
       tasks_duration: taskForm.is_estatic ? "00:00:10" : "00:01:00",
       is_estatic: taskForm.is_estatic,
       is_active: true
     };
 
     try {
-      // POST 1: Crear la tarea
-      const responseTask = await fetch('http://localhost:8000/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTaskData)
-      });
-
+      const responseTask = await fetch('http://localhost:8000/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newTaskData) });
       if (responseTask.ok) {
         const resultTask = await responseTask.json();
         const createdTask = resultTask.data || newTaskData;
+        const newRelationData = { groups_tasks_views_name: `${createdTask.task_name}_view_${targetViewId}`, is_active: true, task_pk: createdTask.tasks_pk, views_pk: targetViewId };
+        const responseRelation = await fetch('http://localhost:8000/groups_tasks_views', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newRelationData) });
 
-        // 2. Preparamos la data para la tabla intermedia (GroupsTasksViews)
-        const newRelationData = {
-          groups_tasks_views_pk: Math.floor(Math.random() * 1000000),
-          groups_tasks_views_name: `${createdTask.task_name}_view_${targetViewId}`,
-          is_active: true,
-          task_pk: createdTask.tasks_pk, // PK de la tarea recién creada
-          views_pk: targetViewId         // PK de la vista actual
-        };
-
-        // POST 2: Crear el enlace en la tabla intermedia
-        // *NOTA: Asegúrate de tener este endpoint en FastAPI (ej. @router.post("/groups_tasks_views"))
-        const responseRelation = await fetch('http://localhost:8000/groups_tasks_views', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newRelationData)
-        });
-
-        if (responseRelation.ok) {
-          // Si todo sale bien, la inyectamos a React, agregándole views_pk para que el filtro la muestre de inmediato
-          setTasks([...tasks, { ...createdTask, views_pk: targetViewId }]);
-          closeTaskModal();
-        } else {
-          alert("La tarea se creó, pero falló al enlazarla con la vista.");
-        }
-      } else {
-        const err = await responseTask.json();
-        alert(`Error al crear tarea: ${err.detail || 'Verifica el backend'}`);
+        if (responseRelation.ok) { setTasks([...tasks, { ...createdTask, views_pk: targetViewId }]); closeTaskModal(); }
+        else { alert("La tarea se creó, pero falló al enlazarla."); }
       }
     } catch (error) { console.error('Error:', error); }
   };
 
-  const handleUpdateTask = async (taskToUpdate) => {
-    const updatedName = prompt("Escribe el nuevo nombre:", taskToUpdate.task_name);
-    if (!updatedName) return;
-    const updatedTaskData = { ...taskToUpdate, task_name: updatedName, task_updated_at: new Date().toISOString().split('T')[0] };
+  const handleSaveUpdatedTask = async () => {
+    if (!editTaskForm.task_name.trim()) return alert("El nombre es obligatorio.");
+    const todayDate = new Date().toISOString().split('T')[0];
+
+    const updatedTaskData = { ...editTaskForm, task_updated_at: todayDate };
+
     try {
-      const response = await fetch(`http://localhost:8000/tasks/${taskToUpdate.tasks_pk}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedTaskData) });
-      if (response.ok) setTasks(tasks.map(t => t.tasks_pk === taskToUpdate.tasks_pk ? updatedTaskData : t));
+      const response = await fetch(`http://localhost:8000/tasks/${editTaskForm.tasks_pk}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedTaskData)
+      });
+      if (response.ok) {
+        setTasks(tasks.map(t => t.tasks_pk === editTaskForm.tasks_pk ? updatedTaskData : t));
+        closeEditTaskModal();
+      }
     } catch (error) { console.error('Error:', error); }
+  };
+
+  const handleToggleLock = async (task) => {
+    // Solo permitimos lock/unlock en frontend, luego se validará rol
+    const updatedTaskData = { ...task, is_estatic: !task.is_estatic };
+    try {
+      const response = await fetch(`http://localhost:8000/tasks/${task.tasks_pk}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedTaskData)
+      });
+      if (response.ok) {
+        setTasks(tasks.map(t => t.tasks_pk === task.tasks_pk ? updatedTaskData : t));
+      }
+    } catch (error) { console.error('Error toggling lock:', error); }
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -256,34 +297,71 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
     } catch (error) { console.error('Error:', error); }
   };
 
+  //Controles de Video 
+  //***********Pendiente*************
   const togglePlay = () => {
     if (!videoRef.current) return;
-    if (videoRef.current.paused) { videoRef.current.play(); setIsPlaying(true); }
-    else { videoRef.current.pause(); setIsPlaying(false); }
+    if (videoRef.current.paused) { videoRef.current.play(); setIsPlaying(true); } else { videoRef.current.pause(); setIsPlaying(false); }
   };
   const handleFastForward = () => { if (videoRef.current) videoRef.current.currentTime += 5; };
   const handleRewind = () => { if (videoRef.current) videoRef.current.currentTime -= 5; };
   const handleTimeUpdate = () => { if (videoRef.current && videoRef.current.duration) setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100); };
   const handleProgressChange = (e) => { if (!videoRef.current) return; videoRef.current.currentTime = (e.target.value / 100) * videoRef.current.duration; setProgress(e.target.value); };
 
+  const activeTasks = activeTimelineViewId ? tasks.filter(t => t.views_pk === activeTimelineViewId && t.is_active !== false) : [];
+  const totalDurationSeconds = activeTasks.reduce((acc, task) => acc + parseDuration(task.tasks_duration), 0);
+
   return (
     <div className="pipeline-container">
+
+      {/* Modal: CREAR TAREA */}
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
           <div style={{ background: '#2c303a', padding: '25px', borderRadius: '8px', width: '400px', color: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
             <h3 style={{ marginTop: 0, marginBottom: '20px', borderBottom: '1px solid #444', paddingBottom: '10px' }}>Crear Nueva Tarea</h3>
+
             <label style={{ display: 'block', marginBottom: '5px' }}>Nombre de la tarea:</label>
             <input type="text" value={taskForm.task_name} onChange={(e) => setTaskForm({ ...taskForm, task_name: e.target.value })} style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #555', background: '#1e2128', color: 'white' }} />
+
             <label style={{ display: 'block', marginBottom: '5px' }}>Descripción:</label>
             <textarea value={taskForm.task_description} onChange={(e) => setTaskForm({ ...taskForm, task_description: e.target.value })} style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #555', background: '#1e2128', color: 'white', minHeight: '80px' }} />
-            <label style={{ display: 'block', marginBottom: '5px' }}>¿Es estático?</label>
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '15px' }}>
-              <label style={{ cursor: 'pointer' }}><input type="radio" checked={taskForm.is_estatic === true} onChange={() => setTaskForm({ ...taskForm, is_estatic: true })} style={{ marginRight: '5px' }} /> Sí</label>
-              <label style={{ cursor: 'pointer' }}><input type="radio" checked={taskForm.is_estatic === false} onChange={() => setTaskForm({ ...taskForm, is_estatic: false })} style={{ marginRight: '5px' }} /> No</label>
-            </div>
+
+            <label style={{ display: 'block', marginBottom: '5px' }}>Fecha de Entrega (Due Date):</label>
+            <input type="date" value={taskForm.task_due_date} onChange={(e) => setTaskForm({ ...taskForm, task_due_date: e.target.value })} style={{ width: '100%', padding: '8px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #555', background: '#1e2128', color: 'white' }} />
+
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button onClick={closeTaskModal} style={{ padding: '8px 15px', background: '#555', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>Cancelar</button>
               <button onClick={handleCreateTask} style={{ padding: '8px 15px', background: '#4a90e2', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Guardar Tarea</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editTaskForm && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
+          <div style={{ background: '#2c303a', padding: '25px', borderRadius: '8px', width: '400px', color: 'white', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '20px', borderBottom: '1px solid #444', paddingBottom: '10px' }}>Actualizar Tarea</h3>
+
+            <label style={{ display: 'block', marginBottom: '5px' }}>Nombre:</label>
+            <input type="text" value={editTaskForm.task_name} onChange={(e) => setEditTaskForm({ ...editTaskForm, task_name: e.target.value })} style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #555', background: '#1e2128', color: 'white' }} />
+
+            <label style={{ display: 'block', marginBottom: '5px' }}>Descripción:</label>
+            <textarea value={editTaskForm.task_description} onChange={(e) => setEditTaskForm({ ...editTaskForm, task_description: e.target.value })} style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #555', background: '#1e2128', color: 'white', minHeight: '80px' }} />
+
+            <label style={{ display: 'block', marginBottom: '5px' }}>Estatus:</label>
+            <select value={editTaskForm.task_status} onChange={(e) => setEditTaskForm({ ...editTaskForm, task_status: e.target.value })} style={{ width: '100%', padding: '8px', marginBottom: '15px', borderRadius: '4px', border: '1px solid #555', background: '#1e2128', color: 'white' }}>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En Progreso">En Progreso</option>
+              <option value="Completado">Completado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+
+            <label style={{ display: 'block', marginBottom: '5px' }}>Due Date (Fecha Límite):</label>
+            <input type="date" value={editTaskForm.task_due_date || ''} onChange={(e) => setEditTaskForm({ ...editTaskForm, task_due_date: e.target.value })} style={{ width: '100%', padding: '8px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #555', background: '#1e2128', color: 'white' }} />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button onClick={closeEditTaskModal} style={{ padding: '8px 15px', background: '#555', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={handleSaveUpdatedTask} style={{ padding: '8px 15px', background: '#4caf50', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Guardar Cambios</button>
             </div>
           </div>
         </div>
@@ -297,33 +375,69 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
             <video ref={videoRef} src={videoSrc} className="video-element" onTimeUpdate={handleTimeUpdate} onClick={togglePlay} onLoadedMetadata={(e) => setVideoDuration(e.target.duration)} />
           ) : (<div className="no-content-message">Aun no hay contenido</div>)}
         </div>
-        <div className="video-controls-centered">
+
+        <div className="video-controls-centered" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '15px', padding: '10px 0' }}>
           <button onClick={handleRewind} className="control-btn">◀◀</button>
-          <button onClick={togglePlay} className="control-btn play-main-btn">{isPlaying ? '⏸ Pause' : '▶ Play'}</button>
+          <button onClick={togglePlay} className="control-btn play-main-btn">{isPlaying ? '⏸' : '▶'}</button>
           <button onClick={handleFastForward} className="control-btn">▶▶</button>
+
+          {activeTimelineViewId && (
+            <span style={{ color: '#aaa', fontSize: '14px', marginLeft: '20px' }}><strong>{formatDuration(totalDurationSeconds)}</strong></span>
+          )}
+
+          {activeTimelineViewId && (
+            <Box sx={{ width: '200px', display: 'flex', alignItems: 'center', gap: 2, marginLeft: '20px' }}>
+              <Slider
+                size="small" value={timelineScale} min={0.05} max={2} step={0.01} onChange={(e, newValue) => setTimelineScale(newValue)}
+                aria-label="Timeline Zoom" valueLabelDisplay="auto" valueLabelFormat={(value) => `${Math.round(value * 100)}%`}
+                sx={{ color: '#4a90e2' }}
+              />
+            </Box>
+          )}
         </div>
 
-        <div className="timeline-task-tracks" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '25px', backgroundColor: '#111', marginBottom: '5px', overflowX: 'auto', position: 'relative' }}>
-          {activeTimelineViewId ? (
-            tasks.filter(t => t.views_pk === activeTimelineViewId && t.is_active !== false)
-              .sort((a, b) => a.tasks_order - b.tasks_order)
-              .map(task => {
-                const durationInSecs = parseDuration(task.tasks_duration);
-                return (
-                  <div key={task.tasks_pk} title={`${task.task_name} (${task.tasks_duration})`}
-                    style={{
-                      width: `${(durationInSecs / videoDuration) * 100}%`, minWidth: '20px', height: '100%', backgroundColor: task.is_estatic ? '#888' : '#2196F3',
-                      borderRight: '1px solid #000', borderLeft: '1px solid #000', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '11px', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', userSelect: 'none'
-                    }}>
-                    {task.task_name}
-                    {!task.is_estatic && <div onMouseDown={(e) => handleDragStart(e, task)} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '6px', backgroundColor: 'rgba(255, 255, 255, 0.4)', cursor: 'ew-resize' }} />}
-                  </div>
-                );
-              })
-          ) : (<div style={{ color: '#555', fontSize: '12px', width: '100%', textAlign: 'center', lineHeight: '25px' }}>Selecciona una vista para ver su pipeline</div>)}
+        <div className="timeline-task-tracks" style={{ display: 'flex', flexDirection: 'row', width: '100%', height: '100px', backgroundColor: '#111', marginBottom: '5px', overflowX: 'auto', overflowY: 'hidden', position: 'relative' }}>
+          <div className="timeline-inner-track" style={{ display: 'flex', flexDirection: 'row', height: '100%', minWidth: `${Math.max(videoDuration * 5, 800) * timelineScale}px`, position: 'relative', transition: 'min-width 0.2s ease-out' }}>
+            {activeTimelineViewId ? (
+              activeTasks
+                .sort((a, b) => a.tasks_order - b.tasks_order)
+                .map(task => {
+                  const durationInSecs = parseDuration(task.tasks_duration);
+                  return (
+                    <div
+                      key={task.tasks_pk} title={`${task.task_name} (${task.tasks_duration})`}
+                      draggable={!task.is_estatic} // Si es estático, NO es arrastrable
+                      onDragStart={(e) => {
+                        if (task.is_estatic) e.preventDefault(); // Doble candado para bloquear drag
+                        else onDragStartTask(e, task.tasks_pk);
+                      }}
+                      onDragOver={onDragOverTask}
+                      onDrop={(e) => onDropTask(e, task.tasks_pk)}
+                      style={{
+                        width: `${(durationInSecs / videoDuration) * 100}%`, minWidth: '30px', height: '100%', backgroundColor: task.is_estatic ? '#555' : '#2196F3',
+                        borderRight: '1px solid #000', borderLeft: '1px solid #000', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '12px', fontWeight: 'bold', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', userSelect: 'none', cursor: task.is_estatic ? 'not-allowed' : 'grab', flexShrink: 0
+                      }}>
+                      {task.is_estatic && <span style={{ marginRight: '5px' }}>🔒</span>}
+                      {task.task_name}
+                      {!task.is_estatic && (
+                        <div
+                          onMouseDown={(e) => handleDragStart(e, task)}
+                          style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '8px', backgroundColor: 'rgba(255, 255, 255, 0.6)', cursor: 'ew-resize' }}
+                        />
+                      )}
+                    </div>
+                  );
+                })
+            ) : (<div style={{ color: '#555', fontSize: '12px', width: '100%', textAlign: 'center', lineHeight: '40px' }}>Selecciona una vista para ver su pipeline</div>)}
+          </div>
         </div>
-        <div className="video-controls-bar"><div className="progress-bar-container"><input type="range" min="0" max="100" value={progress || 0} onChange={handleProgressChange} className="progress-bar" /></div></div>
+
+        <div className="video-controls-bar" style={{ padding: '10px', width: '100%' }}>
+          <div className="progress-bar-container" style={{ width: '100%' }}>
+            <input type="range" min="0" max="100" value={progress || 0} onChange={handleProgressChange} className="progress-bar" style={{ width: '100%', cursor: 'pointer' }} />
+          </div>
+        </div>
       </div>
 
       <ViewsSection
@@ -334,14 +448,21 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
         handleCreateView={handleCreateView}
         handleUpdateView={handleUpdateView}
         handleDeleteView={handleDeleteView}
-        moveViewOrder={moveViewOrder}
+
+        onDragStartView={onDragStartView}
+        onDragOverView={onDragOverView}
+        onDropView={onDropView}
+
         activeTimelineViewId={activeTimelineViewId}
         setActiveTimelineViewId={setActiveTimelineViewId}
         openDropdownViewId={openDropdownViewId}
         toggleTaskDropdown={toggleTaskDropdown}
+
+        // Atributos pasados a TasksSection
         tasks={tasks}
         openTaskModal={openTaskModal}
-        handleUpdateTask={handleUpdateTask}
+        openEditTaskModal={openEditTaskModal}
+        handleToggleLock={handleToggleLock}
         handleDeleteTask={handleDeleteTask}
       />
     </div>

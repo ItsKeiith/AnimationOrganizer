@@ -27,6 +27,7 @@ class TasksClass(BaseModel):
     task_status: str
     task_created_at: date
     task_updated_at: date
+    task_due_date: date
     tasks_order: int
     tasks_duration:str
     is_estatic:bool
@@ -53,12 +54,15 @@ def get_tasks(db: Session = Depends(get_db)):
             "tasks_pk": task.tasks_pk,
             "task_name": task.task_name,
             "task_description": task.task_description,
+            "task_status": task.task_status,
+            "task_created_at": task.task_created_at, 
+            "task_updated_at": task.task_updated_at,
+            "task_due_date": task.task_due_date,
             "is_estatic": task.is_estatic,
             "tasks_duration": task.tasks_duration,
             "tasks_order": task.tasks_order,
             "is_active": task.is_active,
-            #Aqui dejamos un join para la tabla intermedia 
-            "groups_tasks_pk": task.group_tasks_views[0].groups_tasks_views_pk if task.group_tasks_views else None 
+            "views_pk": task.group_tasks_views[0].views_pk if task.group_tasks_views else None 
         }
         result.append(task_dict)
         
@@ -86,6 +90,7 @@ def create_task(
         task_status=task_data.task_status,
         task_created_at=task_data.task_created_at,
         task_updated_at=task_data.task_updated_at,
+        task_due_date=task_data.task_due_date,
         tasks_order = task_data.tasks_order,
         tasks_duration = task_data.tasks_duration,
         is_estatic = task_data.is_estatic,
@@ -114,6 +119,7 @@ def create_tasks_bulk(
         task_status=task.task_status,
         task_created_at=task.task_created_at,
         task_updated_at=task.task_updated_at,
+        task_due_date=task.task_due_date,
         tasks_order = task.tasks_order,
         tasks_duration = task.tasks_duration,
         is_estatic = task.is_estatic,
@@ -146,15 +152,16 @@ def update_task(
             detail="Task not found"
         )
 
-    task_actual.task_name = task_data.task_name,
-    task_actual.task_description = task_data.task_description,
-    task_actual.task_status = task_data.task_status,
-    task_actual.task_created_at = task_data.task_created_at,
-    task_actual.task_updated_at = task_data.task_updated_at,
-    task_actual.tasks_order = task_data.tasks_order,
-    task_actual.tasks_duration = task_data.tasks_duration,
-    task_actual.is_estatic = task_data.is_estatic,
-    task_actual.is_active = task_data.is_active,
+    task_actual.task_name = task_data.task_name
+    task_actual.task_description = task_data.task_description
+    task_actual.task_status = task_data.task_status
+    task_actual.task_created_at = task_data.task_created_at
+    task_actual.task_updated_at = task_data.task_updated_at
+    task_actual.task_due_date = task_data.task_due_date
+    task_actual.tasks_order = task_data.tasks_order
+    task_actual.tasks_duration = task_data.tasks_duration
+    task_actual.is_estatic = task_data.is_estatic
+    task_actual.is_active = task_data.is_active
 
     db.commit()
     db.refresh(task_actual)
@@ -175,6 +182,10 @@ async def borrar_task(tasks_pk: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Task no encontrado")
 
     task_actual.is_active = False
+
+    for relacion in task_actual.group_tasks_views:
+        relacion.is_active = False
+
     db.commit()
     
     return {"mensaje": f"Task con ID {tasks_pk} desactivado correctamente"}

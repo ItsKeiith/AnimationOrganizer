@@ -4,10 +4,11 @@ function TasksSection({
   viewId,
   tasks,
   openTaskModal,
-  handleUpdateTask,
+  openEditTaskModal,
+  handleToggleLock,
   handleDeleteTask
 }) {
-  const viewTasks = tasks.filter(t => t.groups_tasks_pk === viewId && t.is_active !== false);
+  const viewTasks = tasks.filter(t => t.views_pk === viewId && t.is_active !== false);
 
   return (
     <div className="task-dropdown-menu-container">
@@ -28,12 +29,23 @@ function TasksSection({
               className="task-item"
               style={{ flex: '1 1 200px', maxWidth: '300px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', background: '#1e2128', border: '1px solid #333', borderRadius: '6px' }}
             >
-              <span className="task-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {task.task_name}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', gap: '8px' }}>
+                {/* Botón interactivo del Candado */}
+                <span
+                  onClick={() => handleToggleLock(task)}
+                  style={{ cursor: 'pointer', fontSize: '16px' }}
+                  title={task.is_estatic ? "Desbloquear Tarea" : "Bloquear Tarea"}
+                >
+                  {task.is_estatic ? '🔒' : '🔓'}
+                </span>
+                <span className="task-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {task.task_name}
+                </span>
+              </div>
+
               <div className="task-actions" style={{ display: 'flex', gap: '5px' }}>
-                <button title="Actualizar" onClick={() => handleUpdateTask(task)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>PUT</button>
-                <button title="Borrar" onClick={() => handleDeleteTask(task.tasks_pk)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>DELETE</button>
+                <button title="Actualizar" onClick={() => openEditTaskModal(task)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#4a90e2', fontWeight: 'bold' }}>PUT</button>
+                <button title="Borrar" onClick={() => handleDeleteTask(task.tasks_pk)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#e74c3c', fontWeight: 'bold' }}>DELETE</button>
               </div>
             </div>
           ))

@@ -12,6 +12,9 @@ class Tasks(Base):
     task_status = Column(String)
     task_created_at = Column(Date)
     task_updated_at = Column(Date)
+
+    task_due_date = Column(Date)#muy importante para el cronograma y para las deadlines 
+
     tasks_order = Column(Integer) #este seria el orden donde esta puesto la tasks en las views 
                             #pensar que podemos usar el poryecto para proyectos de animacion 
                             #y proyectos de estaticos como de comic 
@@ -23,6 +26,8 @@ class Tasks(Base):
     is_estatic= Column(Boolean, default= False)#Al agregar una task se le pregunta al usario en el front
                                                 #Si la task sera estatica o sera un proyecto de aniamcion
 
+
+
     is_active = Column(Boolean, default=True)
     
     #Relationships
@@ -30,4 +35,4 @@ class Tasks(Base):
     group_tasks_views = relationship("GroupsTasksViews", back_populates="task")
     files_tasks_groups = relationship("FilesTasksGroups", back_populates="task")
     repositorygroups = relationship("RepositoryGroups", back_populates="task")  
-    comments = relationship("Comments", back_populates = "task")  
+    comments = relationship("Comments", back_populates = "task")

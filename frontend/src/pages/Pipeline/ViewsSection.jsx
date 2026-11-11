@@ -9,7 +9,12 @@ function ViewsSection({
   handleCreateView,
   handleUpdateView,
   handleDeleteView,
-  moveViewOrder,
+
+  // Recibimos los métodos de Drag and Drop
+  onDragStartView,
+  onDragOverView,
+  onDropView,
+
   activeTimelineViewId,
   setActiveTimelineViewId,
   openDropdownViewId,
@@ -18,13 +23,13 @@ function ViewsSection({
   // Props que bajan hasta TasksSection
   tasks,
   openTaskModal,
-  handleUpdateTask,
+  openEditTaskModal,
+  handleToggleLock,
   handleDeleteTask
 }) {
   return (
     <div className="views-section-container">
       <div className="views-header-left">
-        <h3>Vistas de Produccion</h3>
         <input
           type="text"
           className="view-name-input"
@@ -39,44 +44,79 @@ function ViewsSection({
         {views.length === 0 ? (
           <p className="empty-views-text">No hay vistas agregadas todavia</p>
         ) : (
-          views.map((view, index) => (
-            <div key={view.views_pk} className="view-item-card">
+          views.map((view, index) => {
+            const isActive = activeTimelineViewId === view.views_pk;
 
-              <div className="view-item-header">
-                <h4>{view.views_name}</h4>
-                <div className="view-actions">
+            return (
+              <div
+                key={view.views_pk}
+                className="view-item-card"
+                draggable
+                onDragStart={(e) => onDragStartView(e, view.views_pk)}
+                onDragOver={onDragOverView}
+                onDrop={(e) => onDropView(e, view.views_pk)}
+                onClick={() => setActiveTimelineViewId(view.views_pk)}
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor: isActive ? '#3b4554' : '',
+                  borderLeft: isActive ? '4px solid #4a90e2' : '4px solid transparent',
+                  transition: 'background-color 0.2s, border-left 0.2s'
+                }}
+              >
+
+                <div className="view-item-header">
+                  <h4>{view.views_name}</h4>
+
+                  <div className="view-actions">
+                    <button
+                      className="view-action-btn update-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUpdateView(view.views_pk, view.views_order);
+                      }}
+                    >
+                      PUT
+                    </button>
+                    <button
+                      className="view-action-btn delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteView(view.views_pk);
+                      }}
+                    >
+                      DELETE
+                    </button>
+                  </div>
+                </div>
+
+                <div className="task-dropdown-container">
                   <button
-                    onClick={() => setActiveTimelineViewId(view.views_pk)}
-                    style={{ background: activeTimelineViewId === view.views_pk ? '#4caf50' : '#4a90e2', border: 'none', color: 'white', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}
+                    className="task-dropdown-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleTaskDropdown(view.views_pk);
+                    }}
                   >
-                    {activeTimelineViewId === view.views_pk ? '✅ Activa' : '🎬 Cargar en Timeline'}
+                    Opciones de Tareas {openDropdownViewId === view.views_pk ? '▲' : '▼'}
                   </button>
 
-                  <button className="view-action-btn order-btn" onClick={() => moveViewOrder(index, -1)} disabled={index === 0}>UP</button>
-                  <button className="view-action-btn order-btn" onClick={() => moveViewOrder(index, 1)} disabled={index === views.length - 1}>DOWN</button>
-                  <button className="view-action-btn update-btn" onClick={() => handleUpdateView(view.views_pk, view.views_order)}>PUT</button>
-                  <button className="view-action-btn delete-btn" onClick={() => handleDeleteView(view.views_pk)}>DELETE</button>
+                  {openDropdownViewId === view.views_pk && (
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <TasksSection
+                        viewId={view.views_pk}
+                        tasks={tasks}
+                        openTaskModal={openTaskModal}
+                        openEditTaskModal={openEditTaskModal}
+                        handleToggleLock={handleToggleLock}
+                        handleDeleteTask={handleDeleteTask}
+                      />
+                    </div>
+                  )}
                 </div>
+
               </div>
-
-              <div className="task-dropdown-container">
-                <button className="task-dropdown-btn" onClick={() => toggleTaskDropdown(view.views_pk)}>
-                  Opciones de Tareas {openDropdownViewId === view.views_pk ? '▲' : '▼'}
-                </button>
-
-                {openDropdownViewId === view.views_pk && (
-                  <TasksSection
-                    viewId={view.views_pk}
-                    tasks={tasks}
-                    openTaskModal={openTaskModal}
-                    handleUpdateTask={handleUpdateTask}
-                    handleDeleteTask={handleDeleteTask}
-                  />
-                )}
-              </div>
-
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
