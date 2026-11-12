@@ -12,7 +12,6 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setErrorMsg('');
 
     try {
@@ -32,18 +31,33 @@ function Login() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Error al iniciar sesion');
+        throw new Error(errorData.detail || 'Error al iniciar sesión');
       }
 
       const data = await response.json();
+      const token = data.access_token;
+
       console.log('RESPUESTA :', data);
 
-      localStorage.setItem('fastapi_token', data.access_token);
-      console.log('TOKEN FASTAPI GUARDADO');
+      //TOKEN de Usuario
+      localStorage.setItem('fastapi_token', token);
 
+      //Buscamos extraer el token de usario 
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const userRole = tokenPayload.role; //
 
+      //Guardamos el rol en local storage para validar permisos en otras pantallas
+      localStorage.setItem('user_role', userRole);
+      console.log('TOKEN FASTAPI GUARDADO. ROL:', userRole);
 
-      navigate('/dashboard', { replace: true });
+      //Redireccion a cada uno
+      if (userRole === 'admin') {
+        // ADMIN
+        navigate('/dashboard', { replace: true });
+      } else {
+        // USER
+        navigate('/dashboard', { replace: true });
+      }
 
     } catch (error) {
       console.error('ERROR COMPLETO:', error);

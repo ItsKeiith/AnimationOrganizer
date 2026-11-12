@@ -25,7 +25,15 @@ function ViewsSection({
   openTaskModal,
   openEditTaskModal,
   handleToggleLock,
-  handleDeleteTask
+  handleDeleteTask,
+
+  //Comentarios
+  handleToggleStatus,
+  taskComments,
+  fetchTaskComments,
+  handleAddComment,
+  currentUserRole
+
 }) {
   return (
     <div className="views-section-container">
@@ -109,6 +117,13 @@ function ViewsSection({
                         openEditTaskModal={openEditTaskModal}
                         handleToggleLock={handleToggleLock}
                         handleDeleteTask={handleDeleteTask}
+
+                        handleToggleStatus={handleToggleStatus}
+                        taskComments={taskComments}
+                        fetchTaskComments={fetchTaskComments}
+                        handleAddComment={handleAddComment}
+                        currentUserRole={currentUserRole}
+
                       />
                     </div>
                   )}

@@ -8,6 +8,7 @@ import Cronograma from './pages/Cronograma/Cronograma.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
 import VentanaGestionProyectos from './pages/VentanaGestionProyectos/VentanaGestionProyectos.jsx';
 import VentanaGestionProduccion from './pages/VentanaGestionProduccion/VentanaGestionProduccion.jsx';
+import GestionUsuarios from './pages/GestionUsuarios/GestionUsuarios.jsx';
 
 
 function App() {
@@ -18,7 +19,8 @@ function App() {
 
         <Route element={<MainLayout />}>
           <Route path="/proyectos" element={<VentanaGestionProyectos />} />
-          <Route path="/produccion" element={<VentanaGestionProduccion />} />
+          <Route path="/produccion" element={<VentanaGestionProduccion />} /> //Ventana Protegida
+          <Route path="/gestion-usuarios" element={<GestionUsuarios />} /> //Ventana Protegida
           <Route path="/dashboard" element={<MainDashboard />} />
           <Route path="/pipeline" element={<Pipeline />} />
           <Route path="/repositorio" element={<Repositorio />} />

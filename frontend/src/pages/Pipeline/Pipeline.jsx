@@ -36,14 +36,14 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
 
   const [activeTimelineViewId, setActiveTimelineViewId] = useState(null);
 
-  // Modals Forms
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [targetViewId, setTargetViewId] = useState(null);
   const [taskForm, setTaskForm] = useState({ task_name: '', task_description: '', task_due_date: '', is_estatic: false });
 
-  const [editTaskForm, setEditTaskForm] = useState(null); // Estado para el nuevo Modal de Edición
+  const [editTaskForm, setEditTaskForm] = useState(null);
 
-  // Refs for Drag & Drop
+  //DnD
   const dragRef = useRef({ isDragging: false, taskId: null, startX: 0, startDur: 0, taskRef: null });
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [draggedViewId, setDraggedViewId] = useState(null);
@@ -311,6 +311,53 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
   const activeTasks = activeTimelineViewId ? tasks.filter(t => t.views_pk === activeTimelineViewId && t.is_active !== false) : [];
   const totalDurationSeconds = activeTasks.reduce((acc, task) => acc + parseDuration(task.tasks_duration), 0);
 
+  const [taskComments, setTaskComments] = useState({});
+
+
+  //STATUS
+  const handleToggleStatus = async (task) => {
+    const newStatus = task.task_status === 'Completada' ? 'Pendiente' : 'Completada';
+    const todayDate = new Date().toISOString().split('T')[0];
+    const updatedTaskData = { ...task, task_status: newStatus, task_updated_at: todayDate };
+
+    try {
+      const response = await fetch(`http://localhost:8000/tasks/${task.tasks_pk}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedTaskData)
+      });
+      if (response.ok) {
+        setTasks(tasks.map(t => t.tasks_pk === task.tasks_pk ? updatedTaskData : t));
+      }
+    } catch (error) { console.error('Error toggling status:', error); }
+  };
+
+  //Chat
+  const fetchTaskComments = async (taskId) => {
+    try {
+      const res = await fetch(`http://localhost:8000/tasks/${taskId}/comments`);
+      if (res.ok) {
+        const result = await res.json();
+        setTaskComments(prev => ({ ...prev, [taskId]: result.data || result }));
+      }
+    } catch (error) { console.error('Error fetching comments:', error); }
+  };
+
+  const handleAddComment = async (taskId, text, userRole) => {
+    const commentData = {
+      comments_description: text,
+      created_by: userRole || 'admin',
+      tasks_fk: taskId
+    };
+    try {
+      const response = await fetch('http://localhost:8000/comments', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(commentData)
+      });
+      if (response.ok) {
+        // Recargar comentarios tras enviar
+        fetchTaskComments(taskId);
+      }
+    } catch (error) { console.error('Error posting comment:', error); }
+  };
+
   return (
     <div className="pipeline-container">
 
@@ -406,9 +453,9 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
                   return (
                     <div
                       key={task.tasks_pk} title={`${task.task_name} (${task.tasks_duration})`}
-                      draggable={!task.is_estatic} // Si es estático, NO es arrastrable
+                      draggable={!task.is_estatic}
                       onDragStart={(e) => {
-                        if (task.is_estatic) e.preventDefault(); // Doble candado para bloquear drag
+                        if (task.is_estatic) e.preventDefault();
                         else onDragStartTask(e, task.tasks_pk);
                       }}
                       onDragOver={onDragOverTask}
@@ -458,12 +505,18 @@ function Pipeline({ userRole = 'admin', projectName = 'Proyecto X', videoSrc }) 
         openDropdownViewId={openDropdownViewId}
         toggleTaskDropdown={toggleTaskDropdown}
 
-        // Atributos pasados a TasksSection
         tasks={tasks}
         openTaskModal={openTaskModal}
         openEditTaskModal={openEditTaskModal}
         handleToggleLock={handleToggleLock}
         handleDeleteTask={handleDeleteTask}
+
+        handleToggleStatus={handleToggleStatus}
+        taskComments={taskComments}
+        fetchTaskComments={fetchTaskComments}
+        handleAddComment={handleAddComment}
+        currentUserRole={userRole}
+
       />
     </div>
   );
