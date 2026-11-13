@@ -44,7 +44,6 @@ def get_db():
         db.close()
 
 # Buscador de usuario 
-# Buscador de usuario 
 def search_user_db(username: str, db: Session):
     user = db.query(UserModel).filter(UserModel.user_name == username).first()
     if user:
@@ -75,8 +74,11 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
             detail="Contraseña incorrecta"
         )
 
+    rol_str = "admin" if user.user_rol_pk == 1 else "user"
+
     access_token = {
         "sub": user.user_name, 
+        "role": rol_str,  
         "exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES) 
     }
 
@@ -84,9 +86,10 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
         "access_token": jwt.encode(access_token, SECRET, algorithm=ALGORITMO),
         "token_type": "bearer",
         "user_email": user.user_email,
-        "username": user.user_name
+        "username": user.user_name,
+        "role": rol_str 
     }
-
+    
 async def auth_user(token: str = Depends(oauth2), db: Session = Depends(get_db)):
     exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, 
